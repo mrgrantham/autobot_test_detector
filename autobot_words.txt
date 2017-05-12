@@ -1,0 +1,3 @@
+n00 door, A DOOR
+n01 doorstop, A DOORSTOP
+n02 person, A PERSON

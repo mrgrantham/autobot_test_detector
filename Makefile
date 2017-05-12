@@ -1,14 +1,14 @@
-NAME=signdetector
+NAME=autobot_detector_test
 CC=g++
-SRC=signdetect.cpp
+SRC=autobot_detector_test.cpp
 
 CFLAGS=
 all:
 	# $(CC) `pkg-config --cflags --libs opencv3`  $(SRC) -o $(NAME)
-	$(CC) -L/usr/local/opt/opencv3/lib -I/usr/local/opt/opencv3/include $(SRC) -o $(NAME) -lopencv_core -lopencv_imgproc -lopencv_videoio -lopencv_imgcodecs -lopencv_objdetect -lopencv_features2d -lopencv_highgui
+	$(CC) -L/usr/local/opt/opencv3/lib -I/usr/local/opt/opencv3/include $(SRC) -o $(NAME) -lopencv_core -lopencv_imgproc -lopencv_videoio -lopencv_imgcodecs -lopencv_objdetect -lopencv_features2d -lopencv_highgui -lopencv_dnn 
 
 LinuxAll:
-	$(CC) -L/usr/local/lib $(SRC) -o $(NAME) -lopencv_core -lopencv_imgproc -lopencv_videoio -lopencv_imgcodecs -lopencv_objdetect -lopencv_features2d -lopencv_highgui
+	$(CC) -L/usr/local/lib $(SRC) -o $(NAME) -lopencv_core -lopencv_imgproc -lopencv_videoio -lopencv_imgcodecs -lopencv_objdetect -lopencv_features2d -lopencv_highgui -lopencv_dnn
 
 clean:
 	rm $(NAME)
