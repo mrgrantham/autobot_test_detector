@@ -12,12 +12,10 @@ using namespace cv;
 
 static void help()
 {
-    cout << "\nThis program demonstrates the cascade recognizer. Now you can use Haar or LBP features.\n"
-            "This classifier can recognize many kinds of rigid objects, once the appropriate classifier is trained.\n"
-            "Program has been modified for use with CMPE297-08 GROUP 5 - Fall 2016\n"
+    cout << "\nThis program can test the performance of a trained caffe model on object recognition with the built in camera.\n"
             "Usage:\n"
-            "./stopdetect [--stop-cascade=<cascade_path> classifier used for detecting stop signs.]\n"
-               "   [--cross-cascade=<cascade_path>] classifier used for detecting pedestrian crossing signs.\n"
+            "./stopdetect [--model-bin=<trained_model_path> path of trained caffe model.]\n"
+               "   [--modeltxt=<model_definition_path>] Path of prototxt file used to define the model.\n"
                "   [--scale=<image scale greater or equal to 1, try 1.3 for example>]\n"
                // "   [--try-flip]\n"
                "   [filename|camera_index]\n\n"
@@ -27,7 +25,9 @@ static void help()
 
 /* Find best class for the blob (i. e. class with maximal probability) */
 void getMaxClass(dnn::Blob &probBlob, int *classId, double *classProb);
+
 std::vector<String> readClassNames(const char *filename = "autobot_words.txt");
+// std::vector<String> readClassNames(const char *filename = "synset_words.txt");
 void detectAndDraw( Mat& img, CascadeClassifier& stopCascade, double scale);
 
 // dnn components
@@ -53,8 +53,6 @@ int main( int argc, const char** argv )
         "{help h||}"
         "{modelBin|../../data/haarcascades/haarcascade_frontalface_alt.caffemodel|}"
         "{modelTxt|../../data/haarcascades/haarcascade_frontalface_alt.prototxt|}"
-        "{scale|1|}"
-        "{@filename||}"
     );
 
     if (parser.has("help"))
@@ -78,23 +76,15 @@ int main( int argc, const char** argv )
         std::cerr << err.msg << std::endl;
         cout << "What?" << endl;
     }
-    //! [Create the importer of Caffe model]
 
-    scale = parser.get<double>("scale");
-    if (scale < 1)
-        scale = 1;
-    inputName = parser.get<string>("@filename");
-    if (!parser.check())
-    {
-        parser.printErrors();
-        return 0;
-    }
-    if( inputName.empty() || (isdigit(inputName[0]) && inputName.size() == 1) )
-    {
-        int c = inputName.empty() ? 0 : inputName[0] - '0';
-        if(!capture.open(c))
-            cout << "Capture from camera #" <<  c << " didn't work" << endl;
-    }
+    // set the frame size
+    capture.set(CV_CAP_PROP_FRAME_WIDTH,800);
+    capture.set(CV_CAP_PROP_FRAME_HEIGHT,600);
+
+    int c = inputName.empty() ? 0 : inputName[0] - '0';
+    if(!capture.open(c))
+        cout << "Capture from camera #" <<  c << " didn't work" << endl;
+
 
     if (!importer)
     {
@@ -115,16 +105,23 @@ int main( int argc, const char** argv )
 
         for(;;)
         {
+            printf("start of loop\n");
             capture >> frame;
-            if( frame.empty() )
-                break;
+            // if( frame.empty() ) {
+            //     printf("empty frame\n");
+            //     break;
+            // }
 
             Mat frame1 = frame.clone();
-            detectAndDraw( frame1, stopCascade, scale);
+            // detectAndDraw( frame1, stopCascade, scale);
+            imshow( "result", frame1 );
 
+            printf("end of loop before break\n");
             int c = waitKey(10);
             if( c == 27 || c == 'q' || c == 'Q' )
                 break;
+            printf("end of loop\n");
+
         }
     }
     return 0;
