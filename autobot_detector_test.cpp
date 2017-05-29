@@ -28,7 +28,7 @@ void getMaxClass(dnn::Blob &probBlob, int *classId, double *classProb);
 
 std::vector<String> readClassNames(const char *filename = "autobot_words.txt");
 // std::vector<String> readClassNames(const char *filename = "synset_words.txt");
-void detectAndDraw( Mat& img, CascadeClassifier& stopCascade, double scale);
+void detectAndDraw( Mat& img, double scale);
 
 // dnn components
 String modelTxt;
@@ -105,29 +105,29 @@ int main( int argc, const char** argv )
 
         for(;;)
         {
-            printf("start of loop\n");
+            // printf("start of loop\n");
             capture >> frame;
-            // if( frame.empty() ) {
-            //     printf("empty frame\n");
-            //     break;
-            // }
+            if( frame.empty() ) {
+                printf("empty frame\n");
+                break;
+            }
 
             Mat frame1 = frame.clone();
-            // detectAndDraw( frame1, stopCascade, scale);
+            detectAndDraw( frame1, scale);
             imshow( "result", frame1 );
 
-            printf("end of loop before break\n");
+            // printf("end of loop before break\n");
             int c = waitKey(10);
             if( c == 27 || c == 'q' || c == 'Q' )
                 break;
-            printf("end of loop\n");
+            // printf("end of loop\n");
 
         }
     }
     return 0;
 }
 
-void detectAndDraw( Mat& img, CascadeClassifier& stopCascade, double scale)
+void detectAndDraw( Mat& img, double scale)
 {
 
     // DNN CAFE ADDITONS
@@ -141,8 +141,13 @@ void detectAndDraw( Mat& img, CascadeClassifier& stopCascade, double scale)
     }
 
     resize(img, img, Size(256, 256));       //GoogLeNet accepts only 224x224 RGB-images
+    static double t = 0;
+
+    t = (double)getTickCount();
+
     dnn::Blob inputBlob = dnn::Blob::fromImages(img);   //Convert Mat to dnn::Blob image batch
     //! [Prepare blob]
+
 
     //! [Set input blob]
     net.setBlob(".data", inputBlob);        //set the network input
@@ -160,6 +165,9 @@ void detectAndDraw( Mat& img, CascadeClassifier& stopCascade, double scale)
     getMaxClass(prob, &classId, &classProb);//find the best class
     //! [Gather output]
 
+    // get time for classification
+    t = (double)getTickCount() - t;
+
     //! [Print results]
     std::vector<String> classNames = readClassNames();
     std::cout << "Best class: #" << classId << " '" << classNames.at(classId) << "'" << std::endl;
@@ -168,42 +176,40 @@ void detectAndDraw( Mat& img, CascadeClassifier& stopCascade, double scale)
 
     // ----------------
 
-    double t = 0;
-    vector<Rect> stopSigns;
-    static Scalar stopColor = Scalar(0, 0, 255);
+    // vector<Rect> stopSigns;
+    static Scalar classColor = Scalar(0, 0, 255);
     Mat gray, smallImg;
 
-    cvtColor( img, gray, COLOR_BGR2GRAY );
-    double fx = 1 / scale;
-    resize( gray, smallImg, Size(), fx, fx, INTER_LINEAR );
-    equalizeHist( smallImg, smallImg );
+    // cvtColor( img, gray, COLOR_BGR2GRAY );
+    // double fx = 1 / scale;
+    // resize( gray, smallImg, Size(), fx, fx, INTER_LINEAR );
+    // equalizeHist( smallImg, smallImg );
 
-    t = (double)getTickCount();
     // stopCascade.detectMultiScale( smallImg, stopSigns,
     //     1.1, 2, 0
     //     //|CASCADE_FIND_BIGGEST_OBJECT
     //     //|CASCADE_DO_ROUGH_SEARCH
     //     |CASCADE_SCALE_IMAGE,
     //     Size(30, 30) );
-    t = (double)getTickCount() - t;
     printf( "detection time = %g ms\n", t*1000/getTickFrequency());
 
     // mark stop signs in the frame
-    for ( size_t i = 0; i < stopSigns.size(); i++ )
-    {
-        Rect r = stopSigns[i];
-        Point center;
-        int radius;
+    // for ( size_t i = 0; i < stopSigns.size(); i++ )
+    // {
+    //     Rect r = stopSigns[i];
+    //     Point center;
+    //     int radius;
 
-        Point textOrg;
-        textOrg.x = r.x;
-        textOrg.y = r.y;
-        center.x = cvRound((r.x + r.width*0.5)*scale);
-        center.y = cvRound((r.y + r.height*0.5)*scale);
-        radius = cvRound((r.width + r.height)*0.25*scale);
-        circle( img, center, radius, stopColor, 3, 8, 0 );
-        putText( img, "STOP SIGN", textOrg, FONT_HERSHEY_SIMPLEX, 1.0, stopColor, 2);
-    }
+    //     Point textOrg;
+    //     textOrg.x = r.x;
+    //     textOrg.y = r.y;
+    //     center.x = cvRound((r.x + r.width*0.5)*scale);
+    //     center.y = cvRound((r.y + r.height*0.5)*scale);
+    //     radius = cvRound((r.width + r.height)*0.25*scale);
+    //     circle( img, center, radius, stopColor, 3, 8, 0 );
+    // }
+    putText( img, classNames.at(classId), Point(20,20), FONT_HERSHEY_SIMPLEX, 1.0, classColor, 2);
+
     imshow( "result", img );
 }
 
