@@ -6,6 +6,7 @@ using namespace cv::dnn;
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <iostream>
+#include <unistd.h>
 
 using namespace std;
 using namespace cv;
@@ -26,8 +27,8 @@ static void help()
 /* Find best class for the blob (i. e. class with maximal probability) */
 void getMaxClass(dnn::Blob &probBlob, int *classId, double *classProb);
 
-std::vector<String> readClassNames(const char *filename = "autobot_words.txt");
-// std::vector<String> readClassNames(const char *filename = "synset_words.txt");
+// std::vector<String> readClassNames(const char *filename = "autobot_words.txt");
+std::vector<String> readClassNames(const char *filename = "synset_words.txt");
 void detectAndDraw( Mat& img, double scale);
 
 // dnn components
@@ -121,7 +122,7 @@ int main( int argc, const char** argv )
             if( c == 27 || c == 'q' || c == 'Q' )
                 break;
             // printf("end of loop\n");
-
+            usleep(200000);
         }
     }
     return 0;
@@ -140,7 +141,8 @@ void detectAndDraw( Mat& img, double scale)
         exit(-1);
     }
 
-    resize(img, img, Size(256, 256));       //GoogLeNet accepts only 224x224 RGB-images
+    // resize(img, img, Size(256, 256));       //GoogLeNet accepts only 224x224 RGB-images
+    resize(img, img, Size(224, 224));       //GoogLeNet accepts only 224x224 RGB-images
     static double t = 0;
 
     t = (double)getTickCount();
@@ -208,7 +210,7 @@ void detectAndDraw( Mat& img, double scale)
     //     radius = cvRound((r.width + r.height)*0.25*scale);
     //     circle( img, center, radius, stopColor, 3, 8, 0 );
     // }
-    putText( img, classNames.at(classId), Point(20,20), FONT_HERSHEY_SIMPLEX, 1.0, classColor, 2);
+    putText( img, (classProb > 0.6)? classNames.at(classId) : String("No Match"), Point(20,20), FONT_HERSHEY_SIMPLEX, 1.0, classColor, 2);
 
     imshow( "result", img );
 }
